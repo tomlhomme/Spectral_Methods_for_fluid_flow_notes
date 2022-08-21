@@ -1,0 +1,359 @@
+\documentclass[a4paper,11pt]{article}
+\title{An Introduction to Spectral Methods for Partial Differential Equations \\ \large With applications to fluid flow} 
+\author{Tom Stopford}
+\date{\today}
+
+
+% Maths packages.
+\usepackage{amsmath} 
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily,
+  mathescape=true,
+  frame=single
+}
+
+
+\usepackage{framed}
+\usepackage{enumerate}
+\usepackage{wasysym}
+\usepackage[super]{nth}
+
+\usepackage{graphicx}
+\usepackage{framed}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{cite}
+\usepackage{mathrsfs}
+\usepackage{array}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+
+\usepackage{amsthm}
+
+\theoremstyle{plain} % this sets the style for all new environments created using \newtheorem to have the "theorem" style, which as a bold title, italic text and vertical space above and below it. 
+\newtheorem{thm}{Theorem}[section] 
+\newtheorem{lem}[thm]{Lemma} 
+\newtheorem{prop}[thm]{Proposition} 
+\newtheorem*{cor}{Corollary} 
+\newtheorem*{claim}{Claim}
+
+\theoremstyle{remark}
+\newtheorem*{nota}{Notation}
+\newtheorem*{rem}{Remark}
+\newtheorem*{note}{Note}
+
+\theoremstyle{definition} % this sets the style for all new environments created using \newtheorem to have the "definition" style, which as a bold title, upright text and vertical space above and below it.
+\newtheorem{defn}{Definition}[section]
+\newtheorem{eg}{Example}[section]
+\newtheorem{ax}{Axiom}[section]
+\newtheorem{fact}{Key Fact}[section]
+
+
+\renewcommand{\u}{\mathbf{u}}
+\renewcommand{\v}{\mathbf{v}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\g}{\mathbf{g}}
+\renewcommand{\div}{\mathbf{\nabla} \cdot}
+\newcommand{\lap}{\mathbf{\nabla}^2}
+\newcommand{\convu}{\u\cdot\mathbf{\nabla}\u}
+\newcommand{\khat}{\hat{\mathbf{k}}}
+\renewcommand{\d}{\text{d}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+
+\newcommand*\conj[1]{\overline{#1}}
+\newcommand{\inner}[2]{\langle #1, #2\rangle }
+
+
+
+\renewcommand{\lstlistingname}{Optimisation Problem}
+
+\begin{document}  
+
+\maketitle
+
+\section{Introduction}
+This guide intends to teach the reader the basics of spectral methods as a means for solving partial differential equations (PDEs). The main application that will be taught is that of fluid flow, but this is far from the limit of this powerful technique. 
+
+My intention is that this guide can be read and understood by anybody who knows multivariable calculus. However, familiarity with the Navier-Stokes equations, basic numerical ODE solving methods and the Fourier transform will definitely add to the reader's understanding. If you ever see a mistake, find something unclear, or feel that a part of these notes is just not up to scratch, please send me a message via email (tstopford17@gmail.com) and I will try my best to fix it. 
+
+With all that being said, I hope this guide helps you
+
+\subsection{Structure of the guide}
+Through this guide, we will work up to solving the incompressible Navier-Stokes equations in 2-D using spectral methods. These are given by
+\begin{align}
+\label{NS:1}u_t+u u_x+v u_y &= -p_x + g_x + \nu \left(u_{xx}+u_{yy}\right)\\ 
+\label{NS:2}v_t+u v_x+v v_y &= -p_y + g_y + \nu \left(v_{xx}+v_{yy}\right) \\ 
+\label{NS:3}u_x+v_y&=0 
+\end{align}
+where \ref{NS:1} and \ref{NS:2} are momentum balance in the x and y direction, and \ref{NS:3} is mass balance (also known as incompressibility). Note the subscripts $x$ and $y$ denote derivatives except for g, where they are components. We will be solving these with periodic boundary conditions. This may be used to approximate static or uniform flow at infinity. In general, spectral methods may be used for problems that are not periodic, but that is not yet covered here.
+
+The first chapter will very quickly cover the Fourier transform. The fact that periodic functions may be written as a series of exponentials, whose derivative is easy to compute, is a key fact exploited by spectral methods and a big part of why they are so powerful.
+
+The second chaper will cover some basic methods for numerically solving ODEs. This is important because writing a PDE in terms of Fourier series leaves us with many ODEs which we have to solve by discretising time.
+
+At this stage we will be ready to solve our first PDE. This will be the 1-D heat equation
+\begin{equation*}
+u_t=\nu u_{xx}
+\end{equation*}
+We will then move on to the 1-D Burgher equation
+\begin{equation}
+u_t + u u_x = \nu u_{xx}
+\end{equation}
+after this we will solve the 2-D Burgher equation
+\begin{align*}
+u_t + u u_x +v u_y= \nu \left(u_{xx}+u_{yy}\right)\\
+v_t + u v_x + v v_y= \nu\left(v_{xx}+v_{yy}\right)
+\end{align*}
+and then we will cover the projection method to enforce mass balance. At this point we will have everything we need to simulate fluids in 2-D.
+
+\section{A quick introduction to the Fourier transform}
+
+Here we will quickly brush over a bit of the maths needed to use spectral methods. The rigour of this is too deep to get into in this guide, but an interested reader should look for resources on Functional analysis and Fourier analysis. Maybe one day I will make something covering these topics, maybe I won't, maybe I already have. That's the magic of the version of me writing these notes and you occupying different points in time.
+
+\subsection{Fourier Series}
+All functions we are interested in approximating will have the following properties:
+\begin{itemize}
+	\item Their spatial domain will be the closed interval $[a,b]$ or the closed rectangle $[a,b]\times[c,d]$ and their time domain will be $[0,T]$.
+	\item They are periodic in their spatial domain. That is $f(a,t)=f(b,t)$ for all $t\in [0,T]$ for a function of a 1-D spatial domain, or $f(a,y,t)=f(b,y,t)$ and $f(x,c,t)=f(x,d,t)$ for all $y\in[c,d]$, $x\in[a,b]$ and $t\in[0,T]$ for a function of a 2-D spatial domain.
+	\item They are Lebesgue square-intgrable. In our context we don't need to worry about this, but what it essentially means is that it doesn't have too many discontinuities.
+\end{itemize}
+
+\begin{note}
+Another way of expressing the third point is that the functions are elements of $L^2(A)$ where $A=[a,b]$ or $[a,b]\times[c,d]$. This is defined to be the space of functions that are integrable and $\int_a|f|^2<\infty$. 
+
+This is a \emph{Hilbert space} and has the following inner product
+\[
+\inner{f}{g} = \int_A f \conj{g}
+\]
+where $\overline{g}$ is the complex conjugate of $g$. Typically, $L^2(A)$ denotes the space of such functions that are real valued, while $L^2(A,\C)$ denotes the space of such functions that are complex valued.
+
+To read more about Lebesgue spaces and integrability, the reader should look for resources on the topic of measure theory.
+\end{note}
+
+We will assume that these properties holds for all functions that we refer to from now on. The following are some key facts about these types of functions that will be instrumental later on. For simplicity, these facts will be stated in the context of functions with one spatial dimension. Very similar versions of them hold for functions with 2 spatial dimensions, but we will deal with them when we get to it.
+
+\begin{fact}
+All such functions $f=f(x)$ where x is our spatial variable may be uniquely written in the form $f(x)=\sum_{n=-\infty}^\infty \widehat{f}_n e^{\frac{i2\pi n x}{L}}$, where $L=b-a$. 
+
+This is known as the \emph{Fourier expansion} of $f$, and the  $\widehat{f}_n \in \C$ are known as the \emph{Fourier coefficients} of $f$. We may use notation $k=\frac{2\pi}{L}$ or $k_n=\frac{2\pi n}{L}$ for convenience.
+
+An extension of this is that for a function that varies with time we may write $f(x,t)=\sum_{n=-\infty}^\infty \widehat{f}_n(t) e^{\frac{i2\pi n x}{L}}$ where the $\widehat{f}_n$ are functions of time only.
+\end{fact}
+
+It is this fact that permits the power of spectral methods. Writing functions this way makes it very easy to write down their time and spatial derivatives.
+
+\begin{fact}
+All of these coefficients are given by the formula $\widehat{f}_n = \int_a^b f(x)e^{-iknx}\d x$. Note that this is the inner product of $f$ and $e^{iknx}$ on $L^2([a,b], \C)$. 
+
+In other words, our Fourier expansion is given by \[f=\sum_{n=-\infty}^\infty \inner{f}{e^{ikn x}} e^{ikn x}\].
+\end{fact}
+\begin{note}
+The process of obtaining the Fourier coefficients of $f$ is known as the \emph{Fourier transform}.
+\end{note}
+
+Since we will be solving for these functions computationally, we could never store the values of all of these Fourier coefficients. This is where the following fact is useul.
+
+\begin{fact}
+If we can only use a finite number of Fourier coefficients, say, for some even $N$ we can only use the coefficients $-N/2, \dots,N/2$-th coefficients, then the best approximation of $f$ in this basis is given by truncating the full Fourier series.
+	That is, we should approximate $f=\sum_{n=-\infty}^\infty \widehat{f}_n e^{ikn x}$ by $\tilde{f}=\sum_{n=-N/2}^{N/2} \widehat{f}_n e^{ikn x}$.
+\end{fact}
+
+\begin{note}
+For real valued functions, the imaginary parts of the Fourier coefficients must cancel out. The only way that this can happen is if $\widehat{f}_n=\overline{\widehat{f}_{-n}}$ for all positive $n$. This fact is known as the \emph{hermitian symmetry} and may be used by a Fourier transform library to save memory and processing time.
+\end{note}
+
+\subsection{The discrete Fourier transform}
+Again, since we are working computationally, the domain of our functions is not a continuum but in fact a discrete grid. Again we will look at things in the context of a function with a 1-D spatial domain. 
+
+We will always assume a uniform grid, $(a=x_1, x_2, \dots, x_N=b)$ with spacing $\Delta x$ between gridpoints. It is worth noting that the word \emph{grid} refers to the division of our spacial domain but does not include the time domain.
+
+In this context, we cannot evaluate a function $f$ on all of $[a,b]$ but instead only sample it at the gridpoints. We will write $f_i=f(x_i)$. To approximate the integral of a function $f$ on $[a,b]$ using this grid, we use the approximation $\int_a^b f(x) \d x \approx \sum_{i=1}^N f_i$.
+
+This leads us to the discrete Fourier transform, which is what Fourier transform libraries actually perform. The Fourier coefficients of a function defined by a grid are given by
+\[
+\widehat{f}_n=\sum_{j=1}^N f_i e^{-iknx_j}\Delta x
+\]
+
+It is worth noting that the process of obtaining the gridpoint values in physical space is known as the \emph{inverse (discrete) Fourier transform} and is given by
+\[
+\widehat{f}_j=\sum_{n=-N/2}^{N/2} \widehat{f}_n e^{iknx_j}\Delta x
+\]
+
+Most fast Fourier transform (FFT) libraries will store the same amount of Fourier coefficients as there are spacial gridpoints (or +1) by default. It doesn't make sense to store any more than this since we don't have enough grid data for the coefficients to have any real meaning beyond this amount.
+
+\section{Simple numerical solvers of ODEs}
+
+
+\section{1-D problems}
+Now that we know enough about the fourier transform and the discrete Fourier transform, we can do our first example of using spectral methods. 
+
+\subsection{The heat equation}
+The 1-D heat equation is given by
+\[
+u_t = \nu u_{xx}
+\]
+where $u:[a,b]\times[0,T]\rightarrow\R$ satisfies $u(a)=u(b)$ and $u(x,t=0)=u_0(x)$.
+
+To solve this, we use the fact that $u(x,t)=\sum_{n=-\infty}^\infty \widehat{u}_n(t)e^{ikn x}$ to see that 
+\begin{align*}
+u_t(x,t)=\frac{\partial}{\partial t}\left(\sum_{n=-\infty}^\infty \widehat{u}_n(t)e^{ikn x}\right) &= \sum_{n=-\infty}^\infty \frac{\partial}{\partial t}\left(\widehat{u}_n(t)e^{ikn x}\right) \\
+&=\sum_{n=-\infty}^\infty \widehat{u}^\prime_n(t)e^{ikn x}
+\end{align*}
+where $f^\prime=\frac{\d f}{\d t}$, and 
+\begin{align*}
+u_{xx} = \frac{\partial^2}{\partial x^2}\left(\sum_{n=-\infty}^\infty \widehat{u}_n(t)e^{ikn x}\right) &= \sum_{n=-\infty}^\infty \frac{\partial^2}{\partial x^2}\left(\widehat{u}_n(t)e^{ikn x}\right) \\
+&= \sum_{n=-\infty}^\infty -(kn)^2\widehat{u}_n(t)e^{ikn x}
+\end{align*}
+so our 1-D heat equation becomes
+\[
+\sum_{n=-\infty}^\infty \left(\widehat{u}^\prime_n(t) +(kn)^2\widehat{u}_n(t)\right)e^{ikn x}=0
+\]
+with initial conditions
+\[
+\sum_{n=-\infty}^\infty \left(\widehat{u}_n(0)-\widehat{u_0}_n\right)e^{ikn x}=0
+\]
+Observe that this means the LHS of both expressions is the fourier expansion of $0$. Since the fourier expansion is unique, this must mean that each term in the fourier series in the LHS is equal to 0.
+
+That is, for each $n\in \mathbb{Z}$ we have $\widehat{u}^\prime_n +(kn)^2\widehat{u}_n(t)=0$ with initial conditions $\widehat{u}_n(0)=\widehat{u_0}_n$. We have turned our PDE into a series of ODEs. In general, ODEs are much simpler to solve than PDEs, this simplification is the essence of spectral methods.
+
+In general, we would have to solve this ODE numerically, but in this case we can solve it analytically. Doing this we obtain
+\[
+\widehat{u}_n(t)=\widehat{u_0}_ne^{-(kn)^2t}
+\]
+So we obtain the final solution
+\[
+u(x,t)=\sum_{n=-\infty}^\infty \left(\widehat{u_0}_ne^{-(kn)^2t}\right)e^{iknx}
+\]
+
+\subsection{General structure of a spectral solver}
+The simple example of the heat equation gives us a general idea of how to use spectral methods. Suppose we are solving for a function $u$ that satisfies $u(x,t=0)=u_0(x)$ and $u=f$ where $A$ is some function of u and its derivatives. Typically an algorithm will follow the following steps. 
+\begin{enumerate}
+	\item Fill the values of $u$ in physical space using the initial conditions.
+	\item Apply the Fourier transform to $u$ to obtain its Fourier coefficients.
+	\item Perform some operations on the Fourier coefficients to calculate their valeues at the next timestep.
+	\item Apply the inverse Fourier transform to obtain the values of the function in physical space.
+	\item Go back to step 2 and repeat for the next timestep. 
+\end{enumerate}
+
+This is the most simple such algorithm. We may end up wishing to compute some values before applying the Fourier transform or even move back and forth between physical space and Fourier space multiple times.
+
+\subsection{Burgher's equation}
+Burgher's equation is given by
+\[
+u_t+uu_x=\nu u_{xx}
+\]
+This is not as simple to solve as the heat equation, since simply writing the Fourier expansion of $u$ does not give us an easy expression for $uu_x$ - if you don't belive me, try to find the Fourier expansion for this term.
+
+Instead, we can use the Fourier expansion for this term more directly. The first thing to do is compute the value of $u_x$. Observe that each Fourier coefficient of $u_x$ is given by $(\widehat{u_x})_n=ikn\widehat{u}_n$. This gives us an easy way to compute $u_x$.
+
+Once we have this, we can use the Fourier expansion for $uu_x$ directly, that is, instead of trying to multiply the Fourier expansions of $u$ and $u_x$, just compute the Fourier expansion of $uu_x$.
+
+Using this method, our PDE becomes
+\[
+\sum_{n=-\infty}^\infty \left(\widehat{u}^\prime_n(t) +(\widehat{uu_x})_n(t)+\nu (kn)^2\widehat{u}_n(t) \right)e^{iknx}=0
+\]
+by the same reasoning as before, this is the same as having every Fourier coefficient equal to 0, so for each $n\in \mathbb{Z}$
+\[
+\widehat{u}^\prime_n(t) +(\widehat{uu_x})_n(t)+\nu (kn)^2\widehat{u}_n(t)
+\]
+We cannot solve this analytically as we could before, so we must discretify time. Lets divide our time domain into  equally spaced points $0=t_0,t_1,\dots,t_N=T$, where the spacing is $\Delta t$. We will write $u^{j}$ for our approximation of $u(t_j)$. Now our ODE becomes
+\[
+\frac{\widehat{u}_n^{j+1}-\widehat{u}_n^j}{\Delta t}+\left(uu_x\right)_n^j +\nu (kn)^2 \widehat{u}_n^{j+1}=0
+\]
+
+Rearranging for $\widehat{u}_n^{j+1}$ we get our time evolution scheme for each Fourier coefficient. Note that we use the $uu_x$ term explicitely but the $u_{xx}$ term implicitely.
+
+\subsection{A brief note on aliasing and de-aliasing}
+It is now an appropriate time to bring up the fact that the numerical solution to Burgher's equation you just did is actually wrong! Probbaly not by much but defninitely a little. This is due to a mathematical phenomenon know as \emph{aliasing}, which arises when we don't have enough gridpoints to represent the functions we would like to. 
+
+
+
+
+
+\section{2-D problems}
+The important thing to note about moving to 2-D is that a function of 2 spacial variables $u=u(x,y)$ may be written as 
+\[
+u(x,y)=\sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \widehat{u}_{mn}e^{ik_x mx + ik_yny}
+\]
+where $k_x=2\pi/L_x$ and $k_y=2\pi/L_y$. 
+
+For notational convenience, we will often omit the $mn$ subscript and write $\widehat{u}$ for $\widehat{u}_{mn}$, along with omitting the $x$ and $y$ subscripts for $k$. We infer which $k$ is being referred to by whether it is next to $m$ or $n$. In many cases these will be the same anyway. 
+
+I will add in the 2-D Burgher's equation soon, but it is a simple enough expansion onto what we already know that it can be treated as an exercise for the reader.
+
+\section{Solving Navier-Stokes}
+Now that we have solved the 2-D Burgher equation, Navier-Stokes is not far away. Notice that momentum balance of Navier-Stokes, given by
+\begin{align*}
+u_t+u u_x+v u_y &= -p_x + g_x + \nu \left(u_{xx}+u_{yy}\right)\\ 
+v_t+u v_x+v v_y &= -p_y + g_y + \nu \left(v_{xx}+v_{yy}\right) \\ 
+\end{align*}
+is very similar to the 2-D Burgher equation. Only with the added pressure gradient and force terms. Timestepping forward with these equations is very similar to what we have already done. 
+
+If we only cared about momentum balance and had no pressure gradient, our time-stepping scheme would be
+\begin{align*}
+\frac{\widehat{u}^{j+1}-\widehat{u}^j}{\Delta t} +\widehat{u u_x}^j + \widehat{v u_y}^j &= ik_m\widehat{g}^j - \nu (k_m^2+k_n^2)\widehat{u}^{j+1} \\
+\frac{\widehat{v}^{j+1}-\widehat{v}^j}{\Delta t} +\widehat{u v_x}^j + \widehat{v v_y}^j &= ik_ng^j - \nu (k_m^2+k_n^2)\widehat{v}^{j+1}
+\end{align*}
+However, we cannot guarantee using only this that incompressibility is satified. This is where the role of the pressure comes in. 
+
+\subsection{The Projection Method}
+Instead of the timestepping scheme above, lets do the same update method, but instead instead of $u^{j+1}$ and $v^{j+1}$, we have the variables $\bar{u}$ and $\bar{v}$. The method we use to ensure that the resulting field is incompressible is known as the \emph{projection method}. The idea is to project $\bar{u}$ onto a divergence free field. The method relies on the following result
+
+\begin{thm}(Helmholtz Decomposition)
+Let $\bar{\u}=(\bar{u},\bar{v})$ (or $(\bar{u},\bar{v},\bar{w})$) be a field defined on a simply connected domain. Then $\u$ may be uniquely decomposed into a divergence-free part and a vorticity-free part. In other words
+\[
+\bar{\u}=\u + \nabla \phi
+\]
+where $\div \u=0$ and $\phi$ is a scalar field.
+\end{thm}
+
+This fact allows us to enforce incompressibility in a simple manner. We can find the field $\phi$ in the following way.
+
+Enforcing incompressibility on our new field
+\begin{align*}
+0=\div \u &= \div(\bar{\u} - \nabla\phi)\\
+          &= \div\bar{\u} - \nabla^2\phi\\
+          &= \sum_{n=-\infty}^\infty \left(ik_n\widehat{\bar{u}}_{nm}+ik_m\widehat{\bar{v}}_{nm} + \left(k_n^2+k_m^2\right)\phi_{nm}\right)e^{i(k_nx+k_my)}
+\end{align*}
+so each Fourier coefficient of $\phi$ satisfies
+\[
+ik_n\bar{u}+ik_m\bar{v} + \left(k_n^2+k_m^2\right)\phi=0
+\]
+
+Once we have found $\phi$, we may simply take its gradient away from $\bar{\u}$ to obtain our divergence free field $\u$. 
+
+\section{Details on implementation}
+This guide is intended to be as general as possible, so most language specific implementation details will be neglected. It is recommended that the reader uses an external FFT (Fast Fourier Transform) library rather than attempting to make their own. Examples of these include FFTW if C or C++ is being used, or the FFT functionality of Numpy if Python is the reader's language of choice. I haven't used the FFT in Numpy, so I can only give information about FFTW in C.
+
+
+
+\subsection{Notes on FFTW}
+The documentation of FFTW is reasonably good, but there are a couple of things worth noting. Firstly, it stores the Fourier coefficients in a slightly weird way. Suppose we are doing a 1-D Fourier transform using c2c. 
+
+If we have N+1 Fourier coefficients for some even N, we would expect for them to be stored in this way:
+\[
+[u_{-N/2},u_{-N/2+1},\dots, u_{N/2}]
+\]
+But instead, FFTW stores them like this: 
+\[
+[u_0,u_1, \dots, u_{N/2}, u_{-N/2}, \dots, u_{-1}]
+\]
+
+This isnt a problem if you use r2c in 1-D (which you should be for everything in this resource), since it makes use of Hermitian symmetry of the coefficients, so it stores 1-D coefficients in the following way
+\[
+[u_0,u_1, \dots, u_{N/2}]
+\]
+
+But using r2c in 2-D does lead to these same complications. In general, if your code doesn't work and you don't know why, check that you are accessing the correct Fourier coefficients.
+
+\section{Further Reading}
+
+
+\end{document}

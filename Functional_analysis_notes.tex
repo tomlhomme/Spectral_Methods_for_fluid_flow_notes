@@ -1,0 +1,57 @@
+\subsection{Spaces}
+Note that in this section, our field $\mathbb{K}$ will always be the reals $\mathbb{R}$, or the complex plane $\mathbb{C}$.
+\subsubsection{Vector spaces}
+A vector space is a space with a `linear' structure. That is, it is closed under linear combinations of its elements. Formally we write this as 
+\begin{defn}
+A set $V$ is a vector space over a field $\mathbb{K}$ if $V$ satisfies the following properties.
+\begin{itemize}
+	\item Let $v\in V$, $\alpha\in\mathbb{K}$, then $\alpha v\in V$.
+	\item Let $u,v \in V$, then $u+v \in V$.
+\end{itemize}
+\end{defn}
+Note that elements $v\in V$ may be referred to as vectors.
+\begin{eg}
+The following are vector spaces over $\mathbb{R}$.
+\begin{itemize}
+\item $\mathbb{R}^n$
+\item The sequence space $\ell^2 = \lbrace (x_1,x_2,\dots):x_n\in \mathbb{R},\sum_{n=1}^\infty |x_n|^2 <\infty \rbrace$ (i.e. the set of real valued sequences whose square sum converges.)
+\item The Lebesgue space $L^2(A) = \lbrace f:A\rightarrow \mathbb{R} : \int_A |f|^2<\infty \rbrace$ (i.e. the set of square integrable functions on domain $A$.
+\end{itemize}
+\end{eg}
+
+\begin{defn}
+Let $V$ be a vector space over a field $\mathbb{K}$. A subset $U$ of $V$ is a (linear) \emph{subspace} of $V$ if $U$ is also a vector space over $\mathbb{K}$.
+\end{defn}
+
+\begin{eg}
+\begin{itemize}
+\item let $v\in \mathbb{R}^n$, then $span(v)=\lbrace \alpha v:\alpha \in \mathbb{R} \rbrace$ is a subspace of $\mathbb{R}^n$.
+\item The sequence space $c_{00}\lbrace (x_1,x_2,\dots,x_k,0,0,\dots):x_n\in \mathbb{R} \rbrace$ (i.e. the set of real valued sequences with only fintely many non-zero terms) is a subspace of $\ell^2$.
+\item The Lebesgue space $\lbrace f \in L^2([a,b]) : f(a)=f(b)=0 \rbrace$ is a subspace of $L^2([a,b])$.
+\end{itemize}
+\end{eg}
+
+\subsubsection{Normed spaces}
+A norm is a way to denote the distance between elements of a vector space, and it has the following definition
+\begin{defn}
+Let $V$ be a vector space over a field $\mathbb{K}$. A function $\|\cdot\|:V\rightarrow\mathbb{R}_{\geq 0}$ is a \emph{norm} if it satisfies
+\begin{itemize}
+	\item $\|v\|=0$ iff $v=0$ for all $v\in V$.
+	\item $\|\alpha v\|=\alpha\|v\|$ for all $\alpha\in\mathbb{K}$, $v\in V$.
+	\item $\|x+y\|\leq \|x\|+\|y\|$ for all $x,y \in V$.
+\end{itemize}
+Note that second and third properties are known as \emph{heterogeneity} and \emph{the triangle inequality}.
+
+The pair $(V, \|\cdot\|)$ is known as a \emph{normed space}.
+\end{defn}
+
+\begin{eg}
+\begin{itemize}
+	\item The standard norm $\|x\|_2=(\sum_{k=1}^n |x_k|^2)^{1/2}$ is a norm on $\mathbb{R}^n$.
+	\item The $\ell^2$-norm, $\|x\|_{\ell^2}=\left(\sum_{k=1}^\infty |x_k|^2\right)^{1/2}$ is a norm on $\ell^2$.
+	\item The $L^2$-norm $\|f\|_{L^2}=\left(\int_A |f|^2\right)^{1/2}$ is a norm on $L^2(A)$.
+\end{itemize}
+\end{eg}
+
+\subsubsection{Sequences}
+Let $V$ be a normed space. 
