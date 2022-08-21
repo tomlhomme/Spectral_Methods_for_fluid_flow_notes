@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.7.5)  21 AUG 2022 11:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.7.5)  21 AUG 2022 21:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -333,20 +333,20 @@ File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 ) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] [6]
-Overfull \hbox (16.17088pt too wide) in paragraph at lines 265--267
+Overfull \hbox (16.17088pt too wide) in paragraph at lines 270--272
 \OT1/cmr/m/n/10.95 time. Lets di-vide our time do-main into equally spaced poin
 ts $0 = \OML/cmm/m/it/10.95 t[]; t[]; [] ; t[] \OT1/cmr/m/n/10.95 =
  []
 
 [7] [8] [9] [10] (./Spectral_methods_notes.aux) ) 
 Here is how much of TeX's memory you used:
- 6565 strings out of 480204
- 105266 string characters out of 5895011
- 395206 words of memory out of 5000000
- 24441 multiletter control sequences out of 15000+600000
+ 6564 strings out of 480204
+ 105260 string characters out of 5895011
+ 394198 words of memory out of 5000000
+ 24440 multiletter control sequences out of 15000+600000
  479814 words of font info for 69 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 67i,12n,77p,525b,261s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 67i,12n,77p,527b,261s stack positions out of 5000i,500n,10000p,200000b,80000s
  </home/tom/.texlive2021/texmf
 -var/fonts/pk/ljfour/jknappen/ec/tcrm1095.600pk></usr/share/texlive/texmf-dist/
 fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/
@@ -363,7 +363,7 @@ ist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/typ
 e1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
 lic/amsfonts/symbols/msbm10.pfb>
-Output written on Spectral_methods_notes.pdf (10 pages, 207032 bytes).
+Output written on Spectral_methods_notes.pdf (10 pages, 207986 bytes).
 PDF statistics:
  117 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream

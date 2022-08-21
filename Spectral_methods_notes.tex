@@ -88,11 +88,16 @@ With all that being said, I hope this guide helps you.
 \subsection{Structure of the guide}
 Through this guide, we will work up to solving the incompressible Navier-Stokes equations in 2-D using spectral methods. These are given by
 \begin{align}
-\label{NS:1}u_t+u u_x+v u_y &= -p_x + g_x + \nu \left(u_{xx}+u_{yy}\right)\\ 
-\label{NS:2}v_t+u v_x+v v_y &= -p_y + g_y + \nu \left(v_{xx}+v_{yy}\right) \\ 
-\label{NS:3}u_x+v_y&=0 
+\label{NS:1}\u_t + \u\cdot \nabla \u &= -\nabla p + \g + \nu \nabla^2\u \\
+\label{NS:3}\div\u &= 0
 \end{align}
-where \ref{NS:1} and \ref{NS:2} are momentum balance in the x and y direction, and \ref{NS:3} is mass balance (also known as incompressibility). Note the subscripts $x$ and $y$ denote derivatives except for g, where they are components. We will be solving these with periodic boundary conditions. This may be used to approximate static or uniform flow at infinity. In general, spectral methods may be used for problems that are not periodic, but that is not yet covered here.
+where $\u(x,y,t)$ denotes the velocity of an eulerian fluid element located at position $(x,y)$ at time $t$, $p=p(x,y,t)$ is the pressure field, and $\g=\g(x,y,t)$ is the force field. We refer to \ref{NS:1} as \emph{momentum balance} and \ref{NS:3} as \emph{mass balance} or \emph{incompressibility} In this guide, we will not use vector calculus notation in this guide though for the sake of clarity. Expanding out the vector calculus notation, we get the equations in this form
+\begin{align*}
+u_t+u u_x+v u_y &= -p_x + g_x + \nu \left(u_{xx}+u_{yy}\right)\\ 
+v_t+u v_x+v v_y &= -p_y + g_y + \nu \left(v_{xx}+v_{yy}\right) \\ 
+u_x+v_y&=0 
+\end{align*}
+Note the subscripts $x$ and $y$ denote derivatives except for g, where they are components. We will be solving these with periodic boundary conditions. This may be used to approximate static or uniform flow at infinity. In general, spectral methods may be used for problems that are not periodic, but that is not yet covered here.
 
 The first chapter will very quickly cover the Fourier transform. The fact that periodic functions may be written as a series of exponentials, whose derivative is easy to compute, is a key fact exploited by spectral methods and a big part of why they are so powerful.
 
@@ -103,15 +108,15 @@ At this stage we will be ready to solve our first PDE. This will be the 1-D heat
 u_t=\nu u_{xx}
 \end{equation*}
 We will then move on to the 1-D Burgher equation
-\begin{equation}
+\begin{equation*}
 u_t + u u_x = \nu u_{xx}
-\end{equation}
+\end{equation*}
 after this we will solve the 2-D Burgher equation
 \begin{align*}
 u_t + u u_x +v u_y= \nu \left(u_{xx}+u_{yy}\right)\\
 v_t + u v_x + v v_y= \nu\left(v_{xx}+v_{yy}\right)
 \end{align*}
-and then we will cover the projection method to enforce mass balance. At this point we will have everything we need to simulate fluids in 2-D.
+and then we will cover the projection method to enforce incompressibility. At this point we will have everything we need to simulate fluids in 2-D.
 
 \section{A quick introduction to the Fourier transform}
 
